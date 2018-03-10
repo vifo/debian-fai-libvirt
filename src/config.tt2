@@ -2,7 +2,8 @@
     print sprintf '%08lx', rand 2**32;
 [%  END -%]
 [%
-    box_description     = "Debian 8.10 (jessie)"
+    description     = "Debian 8.10 (jessie)"
+    dist            = "jessie"
 
     # settings to be used when creating a libvirt VM by running `make`
     hostname    = "fai-" _ randhex

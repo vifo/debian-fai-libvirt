@@ -1,7 +1,7 @@
 [% PROCESS "config.tt2" -%]
 #!/bin/sh
 #
-# Install [% box_description %] box using libvirt/virt-install
+# Install [% description %] box using libvirt/virt-install
 
 set -x
 

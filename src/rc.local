@@ -1,8 +1,12 @@
 #!/bin/sh
 #
-# rc.local
+# /etc/rc.local
 #
-# Run Debian post installation steps here (instead via `preseed/late_command`)
+# Run [% description -%] post installation steps once.
+#
+# This file will be executed on first boot after installation. It runs
+# "/root/fai/postinstall.sh", disables itself by restoring original version of
+# "/etc/rc.local" and shutdowns system on finish.
 
 logger -t rc.local "started at $(date -R) by $(id)"
 

@@ -1,13 +1,8 @@
 [% PROCESS config.tt2 -%]
-# [% box_description -%] preseed file
+# [% description -%] preseed file
 #
-# https://www.debian.org/releases/jessie/amd64/apb.html
-# https://www.debian.org/releases/jessie/example-preseed.txt
-#
-# preseed methods: initrd, file, network
-#
-# $ debconf-get-selections --installer >debconf_selections.txt
-# $ debconf-get-selections             >>debconf_selections.txt
+# https://www.debian.org/releases/[% dist -%]/amd64/apb.html
+# https://www.debian.org/releases/[% dist -%]/example-preseed.txt
 
 # localization
 d-i debian-installer/locale string [% language -%]_[% language_variant %] 
