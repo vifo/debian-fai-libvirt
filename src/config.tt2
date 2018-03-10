@@ -67,9 +67,6 @@
     IF with_inst_debian_frontend;
         kernel_args.push("DEBIAN_FRONTEND=$with_inst_debian_frontend");
     END;
-    IF with_inst_log_level;
-        kernel_args.push("LOG_LEVEL=$with_inst_log_level");
-    END;
     IF with_serial_console;
         kernel_args.push("console=ttyS0,115200n8");
     END;
