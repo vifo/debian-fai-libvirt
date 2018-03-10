@@ -1,0 +1,77 @@
+[%  MACRO randhex PERL -%]
+    print sprintf '%08lx', rand 2**32;
+[%  END -%]
+[%
+    box_description     = "Debian 8.10 (jessie)"
+
+    # settings to be used when creating a libvirt VM by running `make`
+    hostname    = "fai-" _ randhex
+    domain      = "local"
+
+    # libvirt settings
+    vm_name         = hostname
+    vm_bridge       = "br1-private"
+    vm_pool         = "lab"
+
+    # features, much like `--with-boot-debug=2`
+    with_serial_console         = 1
+    with_postinstall            = 0
+    with_inst_debian_frontend   = "text"        # DEBIAN_FRONTEND=text|newt|gtk|noninteractive
+    #with_inst_boot_debug        = 2             # BOOT_DEBUG
+
+    # general installer configuration
+    language            = "en"                  # language
+    language_variant    = "US"                  # language variant, US, CA
+    country             = "DE"                  # ISO country code
+    keymap              = "de"                  # loadkeys compatible (?)
+    timezone            = "Europe/Berlin"       # timezone as in /usr/share/timezones
+
+    # mirror and network settings
+    mirror              = "ftp2.de.debian.org"
+
+    # accounts
+    root_password       = "vagrant"
+
+    # packages to remove and add
+    packages_remove = [
+        "task-english",
+        "installation-report",
+        "linux-image-3.16.0-4-amd64",
+    ]
+
+    packages_add = [
+        "apt-transport-https",
+        "bash-completion",
+        "curl",
+        "openssh-server",
+        "rsync",
+        "sudo",
+    ]
+
+    # kernel arguments passed to `virt-install --extra-args`
+    kernel_args = [
+        "ipv6.disable=1",
+    ]
+
+    initrd_inject_files = [
+        "postinstall.sh",
+        "preseed.cfg",
+        "rc.local",
+        "sshd-keygen.service",
+    ]
+-%]
+[%
+    # add kernel arguments depending on `with_feature` settings above
+    IF with_inst_boot_debug;
+        kernel_args.push("BOOT_DEBUG=$with_inst_boot_debug");
+    END;
+    IF with_inst_debian_frontend;
+        kernel_args.push("DEBIAN_FRONTEND=$with_inst_debian_frontend");
+    END;
+    IF with_inst_log_level;
+        kernel_args.push("LOG_LEVEL=$with_inst_log_level");
+    END;
+    IF with_serial_console;
+        kernel_args.push("console=ttyS0,115200n8");
+    END;
+-%]

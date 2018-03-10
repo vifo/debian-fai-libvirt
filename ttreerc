@@ -1,0 +1,12 @@
+verbose 
+recurse
+color
+eval_perl
+
+src = src
+dest = build
+ignore = config.tt2
+
+suffix sh.tt2 = sh
+suffix cfg.tt2 = cfg
+

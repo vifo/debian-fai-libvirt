@@ -1,0 +1,12 @@
+[Unit]
+Description=Generate sshd host keys
+ConditionPathExists=!/etc/ssh/ssh_host_rsa_key
+Before=sshd.service
+Wants=sshd.service
+
+[Service]
+Environment="DEBIAN_FRONTEND=noninteractive"
+ExecStart=/usr/sbin/dpkg-reconfigure openssh-server
+
+[Install]
+WantedBy=multi-user.target

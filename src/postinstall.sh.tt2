@@ -1,0 +1,84 @@
+[% PROCESS config.tt2 -%]
+#!/bin/sh
+#
+# Run post installation steps during Debian installation
+
+NAME="$(basename "$(readlink -f "$0")")"
+DEBIAN_FRONTEND="noninteractive"
+export DEBIAN_FRONTEND
+
+# diagnostics
+echo "$NAME: starting on $(hostname --fqdn) at $(date -R)"
+
+# change sudoers so members of group `sudo` can run any command with
+# root privileges without password prompt
+perl -i -pE \
+    's/^\%sudo\s+.*$/%sudo\tALL=(ALL:ALL)\tNOPASSWD:ALL/' \
+    /etc/sudoers
+
+# add vagrant user
+useradd vagrant --system --groups sudo --create-home
+cat >/etc/sudoers.d/vagrant <<EOF
+# user vagrant can execute all commands as root without password prompt
+vagrant   ALL=(ALL:ALL)   NOPASSWD:ALL
+EOF
+
+# remove unwanted packages
+apt-get --yes --purge remove [% packages_remove.join(' ') %]
+apt-get --yes --purge autoremove
+apt-get clean
+
+# remove apt lists, will be rebuilt by `apt-get update`
+find /var/lib/apt/lists/ -type f -print0 | \
+    xargs -0 --no-run-if-empty rm -f
+
+# regenerate ssh host keys automatically via systemd
+cp /root/fai/sshd-keygen.service /etc/systemd/system
+chmod 644 /etc/systemd/system/sshd-keygen.service
+systemctl enable sshd-keygen.service
+
+# disable static gettys
+systemctl mask getty-static.service
+
+# adjust grub boot loader
+perl -i -p \
+    -E 's/^GRUB_TIMEOUT=\d+/GRUB_TIMEOUT=1/;' \
+    -E 's/^GRUB_CMDLINE_LINUX_DEFAULT=.*/GRUB_CMDLINE_LINUX_DEFAULT=""/;' \
+    -E 's/^GRUB_CMDLINE_LINUX=.*/GRUB_CMDLINE_LINUX="console=ttyS0,115200n8 console=tty1"/;' \
+    /etc/default/grub
+update-grub
+
+# purge locales and localized man pages
+find /usr/share/locale -mindepth 1 -maxdepth 1 -type d \
+    -not -iname 'en' -and -not -iname 'en_US' \
+    -exec rm -v -rf '{}' \;
+find /usr/share/man/ -mindepth 1 -maxdepth 1 -type d \
+    -not -name 'man*' \
+    -exec rm -v -rf '{}' \;
+
+# wipe swap space with zeros
+#swapoff -a
+#swap_uuid="$(perl -nE 'print $1 if /^UUID=(\S+).*swap\s+sw/' /etc/fstab)"
+#dd if=/dev/zero of=/dev/vda5 bs=4M
+#mkswap --uuid "$swap_uuid" /dev/vda5
+
+# wipe free space with zeros
+#dd if=/dev/zero of=/zero bs=4M
+#rm -f /zero
+
+# print system information for debugging
+uname -a
+cat /etc/debian_version
+df -h /
+df /
+lsblk
+fdisk -l /dev/vda
+cat /etc/fstab
+cat /proc/cpuinfo
+uptime
+free
+
+# remove ssh host keys
+rm -rf /etc/ssh/ssh_host_*
+
+echo "$NAME: done on $(hostname --fqdn) at $(date -R)"

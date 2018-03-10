@@ -1,0 +1,114 @@
+[% PROCESS config.tt2 -%]
+# Debian 8 "jessie" preseed file.
+#
+# https://www.debian.org/releases/jessie/amd64/apb.html
+# https://www.debian.org/releases/jessie/example-preseed.txt
+#
+# preseed methods: initrd, file, network
+#
+# $ debconf-get-selections --installer >debconf_selections.txt
+# $ debconf-get-selections             >>debconf_selections.txt
+
+# localization
+d-i debian-installer/locale string [% language -%]_[% language_variant %] 
+d-i debian-installer/language string [% language %] 
+d-i debian-installer/country string [% country %]
+d-i localechooser/supported-locales multiselect [% language -%]_[% language_variant -%].UTF-8
+
+d-i keyboard-configuration/xkb-keymap select [% keymap %]
+d-i console-setup/ask_detect boolean false
+#d-i keymap select [% keymap %]
+#d-i console-setup/modelcode string pc105
+#d-i console-setup/layoutcode string [% keymap %]
+
+# hostname/domain, network interface
+d-i netcfg/get_hostname string [% hostname %]
+d-i netcfg/hostname string [% hostname %]
+d-i netcfg/get_domain string [% domain %]
+d-i netcfg/choose_interface select eth0
+d-i netcfg/wireless_wep string
+
+# clock and time zone
+d-i clock-setup/utc boolean true
+d-i time/zone string [% timezone %]
+d-i clock-setup/ntp boolean true
+
+# deb package mirrors
+d-i mirror/country string manual
+d-i mirror/http/directory string /debian
+d-i mirror/http/hostname string [% mirror %]
+d-i mirror/http/proxy string [% http_proxy %]
+
+# apt
+d-i apt-setup/contrib           boolean         true
+d-i apt-setup/non-free          boolean         true
+d-i apt-setup/services-select   multiselect     security, updates
+d-i apt-setup/use_mirror        boolean         false
+
+#d-i apt-setup/security_host string security.debian.org
+#d-i apt-setup/volatile_host string volatile.debian.org
+
+# base packages
+tasksel tasksel/first   multiselect     minimal
+d-i pkgsel/include      string          [% packages_add.join(" ") %]
+d-i pkgsel/upgrade      select          full-upgrade
+
+# do not report package usage statistics
+popularity-contest popularity-contest/participate boolean false
+
+# accounts
+d-i passwd/root-login               boolean     true
+d-i passwd/root-password            password    [% root_password %]
+d-i passwd/root-password-again      password    [% root_password %]
+#d-i passwd/root-password-crypted    password    $1$lQ7iu8aE$9YeFJJsCCVd9hgWD48VG11
+
+d-i passwd/make-user                boolean     true
+d-i passwd/user-fullname            string      vagrant user
+d-i passwd/username                 string      vagrant
+d-i passwd/user-password            password    vagrant
+d-i passwd/user-password-again      password    vagrant
+#d-i passwd/user-password-crypted    password    $1$lQ7iu8aE$9YeFJJsCCVd9hgWD48VG11
+
+# partitioning
+d-i partman-auto/method string regular
+d-i partman-auto/choose_recipe select atomic
+d-i partman-partitioning/confirm_write_new_label boolean true
+d-i partman/choose_partition select finish
+d-i partman/confirm boolean true
+d-i partman/confirm_nooverwrite boolean true
+d-i partman/mount_style select uuid
+d-i partman-md/confirm boolean true
+
+# boot loader
+d-i grub-installer/bootdev          string      /dev/vda
+d-i grub-installer/only_debian      boolean     true
+d-i grub-installer/with_other_os    boolean     false
+
+# boot loader kernel arguments
+[%  IF with_serial_console -%]
+d-i debian-installer/add-kernel-opts string console=ttyS0,115200n8
+[%  END -%]
+
+# Run postinstall script via `preseed/late_command`.
+#
+# For caveats, check:
+#   https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=610525
+d-i preseed/late_command string \
+    mkdir -p                            /target/root/fai; \
+[%  FOREACH filename IN initrd_inject_files -%]
+    cp /[% filename -%]                 /target/root/fai/[% filename %]; \
+[%  END -%]
+    chmod +x                            /target/root/fai/*.sh; \
+    cp /target/etc/rc.local             /target/etc/rc.local.debian; \
+    cp /target/root/fai/rc.local        /target/etc/rc.local; \
+    chmod +x                            /target/etc/rc.local; \
+    cp /target/fai/sshd-keygen.service  /target/etc/systemd/system; \
+    true;
+
+# skip installation complete message
+d-i finish-install/reboot_in_progress note
+
+# reboot after installation, so rc.local can run once
+d-i cdrom-detect/eject boolean false
+d-i debian-installer/exit/poweroff boolean false
+

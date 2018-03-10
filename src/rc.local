@@ -1,0 +1,19 @@
+#!/bin/sh
+#
+# rc.local
+#
+# Run Debian post installation steps here (instead via `preseed/late_command`)
+
+logger -t rc.local "started at $(date -R) by $(id)"
+
+# rename (disable) this script and restore original
+mv /etc/rc.local                /etc/rc.local.fai
+mv /etc/rc.local.debian         /etc/rc.local
+
+[ -x "/root/fai/postinstall.sh" ] && {
+    /root/fai/postinstall.sh
+    shutdown -h now
+}
+
+# not reached
+exit 0

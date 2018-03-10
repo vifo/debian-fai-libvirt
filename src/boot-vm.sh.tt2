@@ -1,0 +1,29 @@
+[% PROCESS "config.tt2" -%]
+#!/bin/sh
+#
+# Install [% box_description %] box using libvirt/virt-install
+
+set -x
+
+VM_NAME="[% vm_name -%]"
+VM_POOL="[% vm_pool -%]"
+VM_BRIDGE="[% vm_bridge -%]"
+
+# run installation
+virt-install \
+    --name              "$VM_NAME" \
+    --virt-type         kvm \
+    --memory            512 \
+    --vcpus             1 \
+    --cpu               host \
+[%  IF without_graphics OR with_serial_console -%]
+    --graphics          none \
+[%  END -%]
+    --location          "http://[% mirror -%]/debian/dists/jessie/main/installer-amd64/" \
+    --disk              size=40,pool="$VM_POOL",sparse=yes,io=native,cache=none \
+    --network           bridge="$VM_BRIDGE",model=virtio \
+[%  FOREACH filename IN initrd_inject_files -%]
+    --initrd-inject     [% filename %] \
+[%  END -%]
+    --extra-args        "[% kernel_args.join(' ') %]"
+
