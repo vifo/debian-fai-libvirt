@@ -6,10 +6,10 @@ doc: README.md
 
 build: doc
 	ttree -f ttreerc 
-	cd build && chmod +x ./boot-vm.sh
+	cd build && chmod +x ./fai.sh
 
 vm: build
-	cd build && ./boot-vm.sh
+	cd build && ./fai.sh install
 
 clean:
 	rm -rf build/
