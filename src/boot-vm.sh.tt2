@@ -16,9 +16,7 @@ virt-install \
     --memory            512 \
     --vcpus             1 \
     --cpu               host \
-[%  IF without_graphics OR with_serial_console -%]
     --graphics          none \
-[%  END -%]
     --location          "http://[% mirror -%]/debian/dists/jessie/main/installer-amd64/" \
     --disk              size=40,pool="$VM_POOL",sparse=yes,io=native,cache=none \
     --network           bridge="$VM_BRIDGE",model=virtio \
