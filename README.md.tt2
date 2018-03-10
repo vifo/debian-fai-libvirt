@@ -38,18 +38,22 @@ Check/adjust settings in [src/config.tt2](src/config.tt2) and run virtual
 machine installation with:
 
 ```sh
-make install
+make vm
 ```
 
 ### make targets
 
 * `build`
 
-  Create build directory `build/` and parse templates in `src/`
+  Populate build directory `build/` with templated files from `src/`
 
 * `vm`
 
   Run virtual machine installation with `build/vm-boot.sh`
+
+* `doc`
+
+  Update [README.md](README.md)
 
 * `clean`
   
