@@ -6,8 +6,8 @@
     dist            = "jessie"
 
     # settings to be used when creating a libvirt VM by running `make`
-    hostname    = "fai-" _ randhex
-    domain      = "local"
+    hostname        = "fai-" _ randhex
+    domain          = "local"
 
     # libvirt settings
     vm_name         = hostname
