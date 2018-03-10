@@ -49,7 +49,11 @@ make vm
 
 * `vm`
 
-  Run virtual machine installation with `build/vm-boot.sh`
+  Run virtual machine installation with `build/fai.sh install`
+
+* `sparsify`
+
+  Create a shrinked/compressed image of VM in `build/`
 
 * `doc`
 
