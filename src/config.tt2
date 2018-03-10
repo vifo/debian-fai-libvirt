@@ -16,7 +16,7 @@
     # features, much like `--with-boot-debug=2`
     with_serial_console         = 1
     with_inst_debian_frontend   = "text"        # DEBIAN_FRONTEND=text|newt|gtk|noninteractive
-    #with_inst_boot_debug        = 2             # BOOT_DEBUG
+    with_inst_boot_debug        = 0             # BOOT_DEBUG=0..3
 
     # general installer configuration
     language            = "en"                  # language
@@ -61,7 +61,7 @@
 -%]
 [%
     # add kernel arguments depending on `with_feature` settings above
-    IF with_inst_boot_debug;
+    IF with_inst_boot_debug.defined;
         kernel_args.push("BOOT_DEBUG=$with_inst_boot_debug");
     END;
     IF with_inst_debian_frontend;
