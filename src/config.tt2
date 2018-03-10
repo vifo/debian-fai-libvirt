@@ -15,7 +15,6 @@
 
     # features, much like `--with-boot-debug=2`
     with_serial_console         = 1
-    with_postinstall            = 0
     with_inst_debian_frontend   = "text"        # DEBIAN_FRONTEND=text|newt|gtk|noninteractive
     #with_inst_boot_debug        = 2             # BOOT_DEBUG
 
