@@ -56,16 +56,6 @@ find /usr/share/man/ -mindepth 1 -maxdepth 1 -type d \
     -not -name 'man*' \
     -exec rm -v -rf '{}' \;
 
-# wipe swap space with zeros
-#swapoff -a
-#swap_uuid="$(perl -nE 'print $1 if /^UUID=(\S+).*swap\s+sw/' /etc/fstab)"
-#dd if=/dev/zero of=/dev/vda5 bs=4M
-#mkswap --uuid "$swap_uuid" /dev/vda5
-
-# wipe free space with zeros
-#dd if=/dev/zero of=/zero bs=4M
-#rm -f /zero
-
 # print system information for debugging
 uname -a
 cat /etc/debian_version
