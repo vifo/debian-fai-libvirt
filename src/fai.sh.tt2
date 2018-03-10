@@ -5,23 +5,59 @@
 
 set -x
 
+NAME="$(basename "$(readlink -f "$0")")"
 VM_NAME="[% vm_name -%]"
 VM_POOL="[% vm_pool -%]"
 VM_BRIDGE="[% vm_bridge -%]"
 
-# run installation
-virt-install \
-    --name              "$VM_NAME" \
-    --virt-type         kvm \
-    --memory            512 \
-    --vcpus             1 \
-    --cpu               host \
-    --graphics          none \
-    --location          "http://[% mirror -%]/debian/dists/jessie/main/installer-amd64/" \
-    --disk              size=40,pool="$VM_POOL",sparse=yes,io=native,cache=none \
-    --network           bridge="$VM_BRIDGE",model=virtio \
+# install box
+install() {
+    virt-install \
+        --name              "$VM_NAME" \
+        --virt-type         kvm \
+        --memory            512 \
+        --vcpus             1 \
+        --cpu               host \
+        --graphics          none \
+        --location          "http://[% mirror -%]/debian/dists/[% dist -%]/main/installer-amd64/" \
+        --disk              size=40,pool="$VM_POOL",sparse=yes,io=native,cache=none \
+        --network           bridge="$VM_BRIDGE",model=virtio \
 [%  FOREACH filename IN initrd_inject_files -%]
-    --initrd-inject     [% filename %] \
+        --initrd-inject     [% filename %] \
 [%  END -%]
-    --extra-args        "[% kernel_args.join(' ') %]"
+        --extra-args        "[% kernel_args.join(' ') %]"
+}
+
+# create shrinked image of installed box
+sparsify() {
+    VM_DISK_FILEPATH="$(virsh domblklist --inactive --domain $VM_NAME \
+        | sed -n 's!^vda\ *!!p')"
+
+    [ -z "$VM_DISK_FILEPATH" ] && {
+        echo "$NAME: Cannot determine disk file path for VM \"$VM_NAME\"" >&2
+        exit 254
+    }
+
+    virt-sparsify \
+        --convert qcow2 \
+        --compress \
+        --tmp "$(dirname "$VM_DISK_FILEPATH")" \
+        "$VM_DISK_FILEPATH" \
+        "./$VM_NAME.sparse.img"
+}
+
+case "$1" in
+    install)
+        shift
+        install "$@"
+        ;;
+    sparsify)
+        shift
+        sparsify "$@"
+        ;;
+    *)
+        echo "Usage: $NAME <install|sparsify>" >&2
+        exit 254
+        ;;
+esac
 

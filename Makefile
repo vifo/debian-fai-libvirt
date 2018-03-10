@@ -11,6 +11,9 @@ build: doc
 vm: build
 	cd build && ./fai.sh install
 
+sparsify: vm
+	cd build && ./fai.sh sparsify
+
 clean:
 	rm -rf build/
 	rm -f README.md
