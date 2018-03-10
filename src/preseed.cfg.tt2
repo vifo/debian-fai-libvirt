@@ -1,5 +1,5 @@
 [% PROCESS config.tt2 -%]
-# Debian 8 "jessie" preseed file.
+# [% box_description -%] preseed file
 #
 # https://www.debian.org/releases/jessie/amd64/apb.html
 # https://www.debian.org/releases/jessie/example-preseed.txt
